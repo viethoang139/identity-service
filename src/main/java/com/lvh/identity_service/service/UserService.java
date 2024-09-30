@@ -2,49 +2,50 @@ package com.lvh.identity_service.service;
 
 import com.lvh.identity_service.dto.request.UserCreationRequest;
 import com.lvh.identity_service.dto.request.UserUpdateRequest;
+import com.lvh.identity_service.dto.response.UserResponse;
 import com.lvh.identity_service.entity.User;
 import com.lvh.identity_service.exception.AppException;
 import com.lvh.identity_service.exception.ErrorCode;
+import com.lvh.identity_service.mapper.UserMapper;
 import com.lvh.identity_service.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
+     UserRepository userRepository;
+     UserMapper userMapper;
 
-    public User createRequest(UserCreationRequest request){
-        User user = new User();
+    public UserResponse createRequest(UserCreationRequest request){
+
 
         if(userRepository.existsByUsername(request.getUsername())){
             throw new AppException(ErrorCode.USER_EXISTED);
         }
+        User user = userMapper.toUser(request);
 
-        user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setDob(request.getDob());
-        return userRepository.save(user);
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 
-    public List<User> getUsers(){
-        return userRepository.findAll();
+    public List<UserResponse> getUsers(){
+        List<User> users = userRepository.findAll();
+        return users.stream().map(user -> userMapper.toUserResponse(user)).collect(Collectors.toList());
     }
 
-    public User getUser(String userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND_USER));
+    public UserResponse getUser(String userId) {
+        return userMapper.toUserResponse(userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND_USER)));
     }
-    public User updateUser(String userId, UserUpdateRequest request){
-        User user = getUser(userId);
-        user.setPassword(request.getPassword());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setDob(request.getDob());
-        return userRepository.save(user);
+    public UserResponse updateUser(String userId, UserUpdateRequest request){
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND_USER));
+        userMapper.updateUser(user, request);
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 
     public void deleteUser(String userId){
