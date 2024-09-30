@@ -3,6 +3,7 @@ package com.lvh.identity_service.controller;
 import com.lvh.identity_service.dto.request.ApiResponse;
 import com.lvh.identity_service.dto.request.AuthenticationRequest;
 import com.lvh.identity_service.dto.response.AuthenticationResponse;
+import com.lvh.identity_service.exception.ErrorCode;
 import com.lvh.identity_service.service.AuthenticationService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class AuthenticationController {
     public ApiResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request){
         boolean res = authenticationService.authenticate(request);
         return ApiResponse.<AuthenticationResponse>builder()
+                .code(ErrorCode.AUTHENTICATE_INVALID.getCode())
                 .result(AuthenticationResponse.builder()
                         .authenticated(res)
                         .build())
