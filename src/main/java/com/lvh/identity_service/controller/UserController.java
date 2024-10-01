@@ -31,13 +31,19 @@ public class UserController {
     }
 
     @GetMapping
-    public List<UserResponse> getUsers(){
-        return userService.getUsers();
+    public ApiResponse<List<UserResponse>> getUsers(){
+       ApiResponse<List<UserResponse>> apiResponse = new ApiResponse<>();
+       apiResponse.setCode(apiResponse.getCode());
+       apiResponse.setResult(userService.getUsers());
+       return apiResponse;
     }
 
     @GetMapping("/{userId}")
-    public UserResponse getUser(@PathVariable String userId){
-        return userService.getUser(userId);
+    public ApiResponse<UserResponse> getUser(@PathVariable String userId){
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setCode(apiResponse.getCode());
+        apiResponse.setResult(userService.getUser(userId));
+        return apiResponse;
     }
 
     @PutMapping("/{userId}")
