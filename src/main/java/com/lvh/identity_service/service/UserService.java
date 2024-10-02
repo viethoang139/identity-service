@@ -12,18 +12,23 @@ import com.lvh.identity_service.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class UserService {
      UserRepository userRepository;
      UserMapper userMapper;
@@ -43,12 +48,16 @@ public class UserService {
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getUsers(){
+        log.info("In method get Users");
         List<User> users = userRepository.findAll();
-        return users.stream().map(user -> userMapper.toUserResponse(user)).collect(Collectors.toList());
+        return users.stream().map(userMapper::toUserResponse).collect(Collectors.toList());
     }
 
+    @PostAuthorize("returnObject.username == authentication.name")
     public UserResponse getUser(String userId) {
+        log.info("In method get user by id");
         return userMapper.toUserResponse(userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND_USER)));
     }
     public UserResponse updateUser(String userId, UserUpdateRequest request){
@@ -57,6 +66,15 @@ public class UserService {
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
+    public UserResponse getMyInfo(){
+        var context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+        User user = userRepository.findByUsername(name)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND_USER));
+
+        return userMapper.toUserResponse(user);
+
+    }
     public void deleteUser(String userId){
         userRepository.deleteById(userId);
     }
