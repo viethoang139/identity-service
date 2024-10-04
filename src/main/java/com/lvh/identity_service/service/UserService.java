@@ -8,6 +8,7 @@ import com.lvh.identity_service.enums.Role;
 import com.lvh.identity_service.exception.AppException;
 import com.lvh.identity_service.exception.ErrorCode;
 import com.lvh.identity_service.mapper.UserMapper;
+import com.lvh.identity_service.repository.RoleRepository;
 import com.lvh.identity_service.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserService {
      UserRepository userRepository;
+     RoleRepository roleRepository;
      UserMapper userMapper;
      PasswordEncoder passwordEncoder;
 
@@ -43,7 +45,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         Set<String> roles = new HashSet<>();
         roles.add(Role.USER.name());
-        user.setRoles(roles);
+       // user.setRoles(roles);
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
@@ -62,6 +64,9 @@ public class UserService {
     public UserResponse updateUser(String userId, UserUpdateRequest request){
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND_USER));
         userMapper.updateUser(user, request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        var roles = roleRepository.findAllById(request.getRoles());
+        user.setRoles(new HashSet<>(roles));
         return userMapper.toUserResponse(userRepository.save(user));
     }
 

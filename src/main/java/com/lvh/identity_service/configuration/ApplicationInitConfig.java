@@ -2,6 +2,9 @@ package com.lvh.identity_service.configuration;
 
 import com.lvh.identity_service.entity.User;
 import com.lvh.identity_service.enums.Role;
+import com.lvh.identity_service.exception.AppException;
+import com.lvh.identity_service.exception.ErrorCode;
+import com.lvh.identity_service.repository.RoleRepository;
 import com.lvh.identity_service.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -24,14 +27,14 @@ public class ApplicationInitConfig {
 
     PasswordEncoder passwordEncoder;
     @Bean
-    ApplicationRunner applicationRunner(UserRepository userRepository){
+    ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository){
         return args -> {
                  if(userRepository.findByUsername("admin").isEmpty()){
                      Set<String> roles = new HashSet<>();
                      roles.add(Role.ADMIN.name());
                      User user = User.builder()
                              .username("admin")
-                             .roles(roles)
+                             //.roles(roles)
                              .password(passwordEncoder.encode("admin"))
                              .build();
 
