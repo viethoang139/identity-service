@@ -15,6 +15,7 @@ public enum ErrorCode {
     AUTHENTICATE_INVALID(1006,"Wrong username or password", HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED(1007, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1008,"You do not have permission", HttpStatus.FORBIDDEN),
+    INVALID_DOB(1009,"Invalid date of birth",HttpStatus.BAD_REQUEST),
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
